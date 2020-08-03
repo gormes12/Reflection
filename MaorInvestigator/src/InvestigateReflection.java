@@ -140,9 +140,9 @@ public class InvestigateReflection implements Investigator {
                     newInstance = ctor.newInstance(args);
                     break;
                 } catch (InstantiationException e) {
-                    e.printStackTrace();
+                   // e.printStackTrace();
                 } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 } catch (InvocationTargetException e) {
