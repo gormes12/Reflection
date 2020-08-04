@@ -105,7 +105,7 @@ public class InvestigateReflection implements Investigator {
     @Override
     public int invokeMethodThatReturnsInt(String methodName, Object... args) {
         int result = 0;
-        Class[] argsClasses = new Class[args.length];
+        Class<?>[] argsClasses = new Class[args.length];
         for (int i = 0; i < args.length; i++) {
             argsClasses[i] = args[i].getClass();
         }
@@ -117,14 +117,8 @@ public class InvestigateReflection implements Investigator {
             } else {
                 result = (int) func.invoke(instanceOfSomething, args);
             }
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+        } catch (NoSuchMethodException | IllegalArgumentException | InvocationTargetException | IllegalAccessException e) {
+            return -1;
         }
 
         return result;
@@ -139,14 +133,8 @@ public class InvestigateReflection implements Investigator {
                 try {
                     newInstance = ctor.newInstance(args);
                     break;
-                } catch (InstantiationException e) {
-                   // e.printStackTrace();
-                } catch (IllegalArgumentException e) {
-                    //e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
+                } catch (InstantiationException | IllegalArgumentException | IllegalAccessException | InvocationTargetException e) {
+                    return null;
                 }
             }
         }
@@ -156,36 +144,15 @@ public class InvestigateReflection implements Investigator {
 
     @Override
     public Object elevateMethodAndInvoke(String name, Class<?>[] parametersTypes, Object... args) {
-        Method[] methods = instanceOfSomething.getClass().getDeclaredMethods();
         Object result = null;
-        boolean isEqual;
-        Class<?>[] methodParametersTypes;
-        for (Method method : methods) {
-            if (method.getName().equals(name)) {
-                isEqual = true;
-                methodParametersTypes = method.getParameterTypes();
-                for (int i = 0; i < methodParametersTypes.length; i++) {
-                    if (!parametersTypes[i].getName().equals(methodParametersTypes[i].getName())) {
-                        isEqual = false;
-                        break;
-                    }
-                }
-                if (isEqual) {
-                    try {
-                        if(!Modifier.isPublic(method.getModifiers())){
-                            method.setAccessible(true);
-                        }
-                        result = method.invoke(instanceOfSomething, args);
-                        break;
-                    } catch (IllegalArgumentException e) {
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    } catch (InvocationTargetException e) {
-                        e.printStackTrace();
-                    }
-                }
+        try {
+            Method methodToInvoke = instanceOfSomething.getClass().getDeclaredMethod(name, parametersTypes);
+            if (!Modifier.isPublic(methodToInvoke.getModifiers())) {
+                methodToInvoke.setAccessible(true);
             }
+            result = methodToInvoke.invoke(instanceOfSomething, args);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            return null;
         }
         return result;
     }
@@ -195,7 +162,7 @@ public class InvestigateReflection implements Investigator {
         return inheritanceChain(instanceOfSomething.getClass(), delimiter);
     }
 
-    public String inheritanceChain(Class obj, String delimiter){
+    public String inheritanceChain(Class<?> obj, String delimiter){
         if(obj.getSuperclass().getSimpleName().equals("Object")){
             return "Object".concat(delimiter).concat(obj.getSimpleName());
         }
