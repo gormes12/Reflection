@@ -112,11 +112,7 @@ public class InvestigateReflection implements Investigator {
 
         try {
             Method func = instanceOfSomething.getClass().getDeclaredMethod(methodName, argsClasses);
-            if (args.length == 0) {
-                result = (int) func.invoke(instanceOfSomething);
-            } else {
-                result = (int) func.invoke(instanceOfSomething, args);
-            }
+            result = (int) func.invoke(instanceOfSomething, args);
         } catch (NoSuchMethodException | IllegalArgumentException | InvocationTargetException | IllegalAccessException e) {
             return -1;
         }
